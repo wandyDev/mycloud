@@ -8,17 +8,26 @@ export class SocketClientService {
   //                    IS TICKET VALID
   //==================================================
   async isTicketValid(ticket: string) {
-    //Busca el ticket
-    const ticketDB = await this.databaseService.user.findFirst({
+    // Busca usuarios con ticket activo y valida por hash
+    const usersWithTicket = await this.databaseService.user.findMany({
       where: {
-        tiket: ticket,
+        tiket: {
+          not: null,
+        },
       },
     });
-    //Si no encuentra el ticket
+
+    let ticketDB: (typeof usersWithTicket)[number] | null = null;
+    for (const user of usersWithTicket) {
+      if (!user.tiket) continue;
+      const isTicketOk = await bcrypt.compare(ticket, user.tiket);
+      if (isTicketOk) {
+        ticketDB = user;
+        break;
+      }
+    }
+
     if (!ticketDB) return false;
-    //Si no coincide el ticket
-    const isTicketOk = await bcrypt.compare(ticket, ticketDB.tiket);
-    if (!isTicketOk) return false;
 
     //Elimina el ticket
     await this.databaseService.user.update({

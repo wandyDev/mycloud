@@ -9,6 +9,7 @@ import {
 import { SocketAgentService } from '../services/socketAgent.service';
 import type { AgentPayload } from '@my_cloud/types';
 import { Server, Socket } from 'socket.io';
+import { ClientGateway } from './client.gateway';
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -16,10 +17,13 @@ import { Server, Socket } from 'socket.io';
   namespace: '/agent',
 })
 export class AgentGateway implements OnGatewayConnection {
-  constructor(private readonly socketService: SocketAgentService) {}
+  constructor(
+    private readonly socketService: SocketAgentService,
+    private readonly clientGateway: ClientGateway,
+  ) {}
 
   @WebSocketServer()
-  server: Server;
+  server!: Server;
   //==================================================
   //                    HANDLE CONNECTION
   //==================================================
@@ -60,17 +64,20 @@ export class AgentGateway implements OnGatewayConnection {
     }
   }
 
-  @SubscribeMessage('sendMetrics')
-  sendMetrics(
+  @SubscribeMessage('findMetrics')
+  handleMetrics(
     @MessageBody() metrics: AgentPayload,
     @ConnectedSocket() client: Socket,
   ) {
     if (!client.data.authorized) {
       client.emit('unauthorized');
       client.disconnect();
+      console.log(`Server ${metrics.serverId} no autorizado para enviar métricas`);
       return;
     }
-    //Enviamos los datos al cliente
-    this.server.of('/client').to(client.data.userId).emit('metrics', metrics);
+    console.log(`Métricas recibidas de ${metrics.serverId}:`, metrics.metrics);
+
+    // Emitir directamente al namespace /client usando el server del ClientGateway
+    this.clientGateway.server.to(client.data.userId).emit('metrics', metrics);
   }
 }

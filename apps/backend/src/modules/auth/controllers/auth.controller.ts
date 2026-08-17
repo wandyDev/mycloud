@@ -6,7 +6,18 @@ import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UseGuards } from '@nestjs/common';
 import { ValidateTokenGuard } from '../guards/validate-token/validate-token.guard';
-import { GetUser } from 'src/decorators/get-user/get-user.decorator';
+import {GetUser }from "../../../decorators/get-user/get-user.decorator"
+
+const getCookieOptions = (maxAge: number) => ({
+  httpOnly: true,
+  secure: process.env.COOKIE_SECURE === 'true',
+  sameSite:
+    process.env.COOKIE_SECURE === 'true'
+      ? ('strict' as const)
+      : ('lax' as const),
+  maxAge,
+});
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -21,18 +32,8 @@ export class AuthController {
   @Post('register')
   async register(@Body() createAuthDto: CreateAuthDto, @Res() res: Response) {
     const response = await this.authService.create(createAuthDto);
-    res.cookie('refreshToken', response.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60 * 24 * 30, //30 dias
-    });
-    res.cookie('accessToken', response.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 15, //15 minutos
-    });
+    res.cookie('refreshToken', response.refreshToken, getCookieOptions(1000 * 60 * 60 * 24 * 30));
+    res.cookie('accessToken', response.accessToken, getCookieOptions(1000 * 60 * 15));
     return res.status(201).json({
       message: 'User created successfully',
       secretToken: response.secretToken,
@@ -48,18 +49,8 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     const response = await this.authService.login(loginDto);
-    res.cookie('refreshToken', response.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60 * 24 * 30, //30 dias
-    });
-    res.cookie('accessToken', response.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 15, //15 minutos
-    });
+    res.cookie('refreshToken', response.refreshToken, getCookieOptions(1000 * 60 * 60 * 24 * 30));
+    res.cookie('accessToken', response.accessToken, getCookieOptions(1000 * 60 * 15));
     return res.status(201).json({
       message: 'User logged in successfully',
     });
@@ -77,6 +68,44 @@ export class AuthController {
     return res.status(201).json({
       message: 'Ticket generated successfully',
       ticket,
+    });
+  }
+
+  //==========================================================
+  //                    SECRET TOKEN
+  //==========================================================
+  @ApiOperation({ summary: 'Generate or rotate user secret token' })
+  @ApiResponse({ status: 201, description: 'Secret token generated successfully' })
+  @UseGuards(ValidateTokenGuard)
+  @Post('secret-token')
+  async generateSecretToken(@GetUser('userId') userId: string, @Res() res: Response) {
+    const secretToken = await this.authService.generateSecretToken(userId);
+    return res.status(201).json({
+      message: 'Secret token generated successfully',
+      secretToken,
+    });
+  }
+
+  //==========================================================
+  //                           LOGOUT
+  //==========================================================
+  @ApiOperation({ summary: 'Logout a user' })
+  @ApiResponse({ status: 200, description: 'User logged out successfully' })
+  @Post('logout')
+  logout(@Res() res: Response) {
+    const clearOpts = {
+      httpOnly: true,
+      secure: process.env.COOKIE_SECURE === 'true',
+      sameSite:
+        process.env.COOKIE_SECURE === 'true'
+          ? ('strict' as const)
+          : ('lax' as const),
+      path: '/',
+    };
+    res.clearCookie('accessToken', clearOpts);
+    res.clearCookie('refreshToken', clearOpts);
+    return res.status(200).json({
+      message: 'Logged out successfully',
     });
   }
 }

@@ -1,19 +1,20 @@
 import os from "os";
-import { AgentPayload } from "@my_cloud/types";
+import type { AgentPayload } from "@my_cloud/types";
 import config from "../../config/config";
 import { io } from "socket.io-client";
 
 if (
-  !config.SECRET ||
   !config.API_URL ||
   !config.SERVER_ID ||
   !config.SERVER_KEY ||
   !config.SECRET_TOKEN
 ) {
-  throw new Error("No se encontro la variable SECRET o API_URL");
+  throw new Error(
+    "Faltan variables en .env (API_URL, SERVER_ID, SERVER_KEY o SECRET_TOKEN). Copia la configuración desde el Dashboard.",
+  );
 }
 
-//creamos la conexion con el socket
+// Creamos la conexión con el socket en el namespace /agent
 const socket = io(config.API_URL, {
   auth: {
     serverId: config.SERVER_ID,
@@ -24,18 +25,23 @@ const socket = io(config.API_URL, {
 
 // Esperamos al evento personalizado 'ready' del servidor
 socket.on("ready", () => {
-  console.log("Servidor validado en DB. Enviando métricas...");
+  console.log("✅ Servidor validado en DB con éxito. Transmitiendo telemetría en vivo...");
+  void sendMetrics();
 });
 
-//si el servidor no esta autorizado
+// Si el servidor no está autorizado
 socket.on("unauthorized", () => {
-  console.log("server no autorizado");
+  console.error("❌ Error: Servidor no autorizado. Revisa que SECRET_TOKEN, SERVER_ID y SERVER_KEY sean correctos.");
   process.exit(1);
 });
 
-//funcion que envia las metricas al servidor
+// Si hay error de conexión
+socket.on("connect_error", (err) => {
+  console.warn("⚠️  Error de conexión con el backend:", err.message);
+});
+
+// Función que envía las métricas al servidor
 async function sendMetrics() {
-  //creamos el payload con las metricas
   const payload: AgentPayload = {
     serverId: config.SERVER_ID,
     secretToken: config.SECRET_TOKEN,
@@ -50,7 +56,6 @@ async function sendMetrics() {
     timestamp: Date.now(),
   };
 
-  //formateamos el payload
   const formattedPayload = {
     ...payload,
     metrics: {
@@ -59,18 +64,20 @@ async function sendMetrics() {
       ramUsed: `${payload.metrics.ramUsed.toFixed(2)} GB`,
       ramTotal: `${payload.metrics.ramTotal.toFixed(2)} GB`,
       uptime: `${payload.metrics.uptime.toFixed(2)} segundos`,
-      cpuUsed: `${payload.metrics.cpuUsed.toFixed(2)} %`,
       cpuCore: payload.metrics.cpuCore,
     },
   };
+
   try {
-    //enviamos el payload al servidor
     if (socket.connected) {
       socket.emit("findMetrics", formattedPayload);
+      console.log(`📡 [${new Date().toLocaleTimeString()}] Métrica transmitida: CPU ${formattedPayload.metrics.cpuLoad} | RAM ${formattedPayload.metrics.ramUsed}/${formattedPayload.metrics.ramTotal}`);
+    } else {
+      console.log("⏳ Socket reconectando...");
+      socket.connect();
     }
   } catch (e) {
-    console.error("Error conectando con el socket", e);
-    process.exit(1);
+    console.error("Error enviando métricas:", e);
   }
 }
 

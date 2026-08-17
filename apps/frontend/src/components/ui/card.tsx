@@ -1,10 +1,13 @@
 import clsx from "clsx";
+import React from "react";
 
 interface CardProps {
   children: React.ReactNode;
   className?: string;
-  title?: string;
-  description?: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  headerAction?: React.ReactNode;
+  badge?: React.ReactNode;
 }
 
 export default function Card({
@@ -12,24 +15,39 @@ export default function Card({
   className,
   title,
   description,
+  headerAction,
+  badge,
 }: CardProps) {
   return (
     <div
-      className={clsx("glass rounded-3xl p-8 flex flex-col gap-6", className)}
+      className={clsx(
+        "rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl p-6 flex flex-col gap-5 shadow-xl shadow-black/40",
+        className,
+      )}
     >
-      {(title || description) && (
-        <div className="space-y-1">
-          {title && (
-            <h2 className="text-2xl font-bold tracking-tight gradient-text">
-              {title}
-            </h2>
-          )}
-          {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
-          )}
+      {(title || description || headerAction || badge) && (
+        <div className="flex items-start justify-between gap-4 border-b border-slate-800/60 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              {typeof title === "string" ? (
+                <h3 className="text-lg font-semibold tracking-tight text-white">
+                  {title}
+                </h3>
+              ) : (
+                title
+              )}
+              {badge}
+            </div>
+            {description && (
+              <p className="text-xs text-slate-400 font-normal leading-relaxed">
+                {description}
+              </p>
+            )}
+          </div>
+          {headerAction && <div className="shrink-0">{headerAction}</div>}
         </div>
       )}
-      {children}
+      <div className="flex-1 flex flex-col">{children}</div>
     </div>
   );
 }

@@ -84,7 +84,7 @@ export class AuthService {
     }
     //generamos el token de acceso
     const accessToken = this.jwtService.sign({
-      id: user.id,
+      userId: user.id,
       email: user.email,
     });
     //generamos el refresh token
@@ -131,5 +131,30 @@ export class AuthService {
       },
     });
     return ticket;
+  }
+
+  //==============================================================
+  //                     REGENERATE SECRET TOKEN
+  //==============================================================
+  async generateSecretToken(userId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const secretToken = randomBytes(64).toString('hex');
+    const secretTokenHash = await bcrypt.hash(secretToken, 10);
+    await this.databaseService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        secretToken: secretTokenHash,
+      },
+    });
+    return secretToken;
   }
 }

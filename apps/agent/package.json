@@ -4,7 +4,8 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "ncc build main.ts -o dist --minify",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start@bot": "tsx main.ts"
   },
   "keywords": [],
   "author": "",

@@ -1,4 +1,10 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
 import { ServersService } from './servers.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { GetUser } from 'src/decorators/get-user/get-user.decorator';
@@ -10,6 +16,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 @UseGuards(ValidateTokenGuard)
 export class ServersController {
   constructor(private readonly serversService: ServersService) {}
+
+  @Get()
+  getServers(@GetUser('userId') userId: string) {
+    return this.serversService.findAllServers(userId);
+  }
 
   @ApiOperation({ summary: 'Create a new server' })
   @ApiResponse({ status: 201, description: 'Server created successfully' })

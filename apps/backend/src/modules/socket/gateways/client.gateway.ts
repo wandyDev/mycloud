@@ -4,10 +4,11 @@ import {
   MessageBody,
   ConnectedSocket,
   OnGatewayConnection,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { SocketClientService } from '../services/client.service';
 import type { AgentPayload } from '@my_cloud/types';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import { ValidateTokenGuard } from '../../auth/guards/validate-token/validate-token.guard';
 @WebSocketGateway({
@@ -19,6 +20,9 @@ import { ValidateTokenGuard } from '../../auth/guards/validate-token/validate-to
 @UseGuards(ValidateTokenGuard)
 export class ClientGateway implements OnGatewayConnection {
   constructor(private readonly socketService: SocketClientService) {}
+
+  @WebSocketServer()
+  server!: Server;
 
   async handleConnection(client: Socket) {
     const ticket = client.handshake.auth.ticket;

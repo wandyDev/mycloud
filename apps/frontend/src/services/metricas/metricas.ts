@@ -1,9 +1,18 @@
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:3001");
+import api from "@/api/api";
+import type {
+  CreateServerPayload,
+  CreateServerResponse,
+  ServerRecord,
+} from "@/types/backend";
 
 export const metricasService = {
-  findMetrics: () => {
-    socket.emit("findMetrics");
+  async createServer(data: CreateServerPayload) {
+    const response = await api.post<CreateServerResponse>("/servers", data);
+    return response.data;
+  },
+
+  async getServers() {
+    const response = await api.get<ServerRecord[]>("/servers");
+    return response.data;
   },
 };

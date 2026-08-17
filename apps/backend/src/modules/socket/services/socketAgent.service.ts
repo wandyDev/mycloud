@@ -27,7 +27,7 @@ export class SocketAgentService {
       secretToken,
       server.user.secretToken,
     );
-    const isServerKeyOk = await bcrypt.compare(serverKey, server.serverKey);
+    const isServerKeyOk = server.serverKey === serverKey;
     //Si todo esta bien
     return {
       isAuthorized: isUserTokenOk && isServerKeyOk,
