@@ -11,7 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(helmet());
   app.enableCors({
-    origin: '*',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
   });
 
