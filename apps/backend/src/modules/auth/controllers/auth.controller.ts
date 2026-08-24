@@ -13,7 +13,7 @@ const getCookieOptions = (maxAge: number) => ({
   secure: process.env.COOKIE_SECURE === 'true',
   sameSite:
     process.env.COOKIE_SECURE === 'true'
-      ? ('strict' as const)
+      ? ('none' as const)
       : ('lax' as const),
   maxAge,
 });
