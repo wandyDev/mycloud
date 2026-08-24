@@ -11,8 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(helmet());
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-    credentials: true,
+    origin: process.env.CORS_ORIGIN || 'https://mycloud-frontend.vercel.app'
   });
 
   const config = new DocumentBuilder()
