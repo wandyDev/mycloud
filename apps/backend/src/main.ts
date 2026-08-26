@@ -11,7 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(helmet());
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'https://mycloud-frontend-dz64eg0b1-wandys-projects-42ac5085.vercel.app',
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     credentials: true,
   });
 
@@ -26,7 +26,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT || 3001);
-  console.log(`Application is running on: ${process.env.PORT || 3001}`);
+  await app.listen(process.env.PORT || 3007);
+  console.log(`Application is running on: ${process.env.PORT || 3007}`);
 }
 bootstrap();

@@ -9,11 +9,14 @@ import type {
 
 export const authService = {
   async login(data: LoginPayload) {
+    console.log("🚀 ~ authService ~ login ~ data:", data);
+    console.log("🚀 ~ authService ~ login ~ data:", data);
     const response = await api.post<LoginResponse>("/auth/login", data);
     return response.data;
   },
 
   async register(data: RegisterPayload) {
+    console.log("🚀 ~ authService ~ register ~ data:", data);
     const response = await api.post<RegisterResponse>("/auth/register", data);
     return response.data;
   },
