@@ -13,6 +13,8 @@ async function bootstrap() {
   app.use(helmet());
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'https://mycloud.wandycruz.me',
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    a0f4c2306ea7e39778d56a335b60557dda1a3d22
     credentials: true,
   });
 
@@ -27,6 +29,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
+<<<<<<< HEAD
   await app.listen(process.env.PORT || 3001);
   console.log(`Application is running on: ${process.env.PORT || 3001}`);
 
@@ -35,6 +38,10 @@ console.log('ENV CHECK:', {
   FRONTEND_URL: process.env.FRONTEND_URL,
   PORT: process.env.PORT,
 });
+=======
+  await app.listen(process.env.PORT || 3007);
+  console.log(`Application is running on: ${process.env.PORT || 3007}`);
+>>>>>>> a0f4c2306ea7e39778d56a335b60557dda1a3d22
 }
 bootstrap();
 
