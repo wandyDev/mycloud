@@ -16,6 +16,8 @@ const getCookieOptions = (maxAge: number) => ({
       ? ('none' as const)
       : ('lax' as const),
   maxAge,
+ domain: '.wandycruz.me',
+  path: '/',
 });
 
 @ApiTags('auth')

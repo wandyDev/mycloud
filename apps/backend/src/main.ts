@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -11,7 +12,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(helmet());
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'https://mycloud-frontend-dz64eg0b1-wandys-projects-42ac5085.vercel.app',
+    origin: process.env.FRONTEND_URL || 'https://mycloud.wandycruz.me',
     credentials: true,
   });
 
@@ -28,5 +29,12 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT || 3001);
   console.log(`Application is running on: ${process.env.PORT || 3001}`);
+
+console.log('ENV CHECK:', {
+  COOKIE_SECURE: process.env.COOKIE_SECURE,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  PORT: process.env.PORT,
+});
 }
 bootstrap();
+
